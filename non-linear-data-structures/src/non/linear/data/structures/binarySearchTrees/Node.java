@@ -20,6 +20,19 @@ public class Node {
     public Node(int key, Object val){
         this.key = key;
         this.val = val;
+        
+        this.parent = null;
+        this.left = null;
+        this.right = null;
+    }
+    
+    public Node(int key, Object val, Node parent){
+        this.key = key;
+        this.val = val;
+        
+        this.parent = parent;
+        this.left = null;
+        this.right = null;
     }
 
     public int getKey() {
