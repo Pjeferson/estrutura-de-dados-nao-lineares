@@ -21,3 +21,10 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+/non-linear-data-structures/nbproject/private/
+nbproject/private/
+/non-linear-data-structures/build/
+/non-linear-data-structures/nbbuild/
+/non-linear-data-structures/dist/
+/non-linear-data-structures/nbdist/
+/non-linear-data-structures/.nb-gradle/
