@@ -19,6 +19,19 @@ public class BinarySearchTreeDefault implements BinarySearchTree{
         this.size = 0;
     }
 
+    public void order(){
+        order(this.root);
+    }
+    private void order(Node n){
+        if(n == null) return;
+        else {
+            System.out.print(n.getKey() + " ");
+            order(n.getLeft());
+            order(n.getRight());
+        }
+        System.out.print("\n");
+    }
+    
     @Override
     public Node find(int key) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -26,7 +39,28 @@ public class BinarySearchTreeDefault implements BinarySearchTree{
 
     @Override
     public void insert(int key, Object val) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Node n = new Node(key, val);
+        if(this.root == null) {
+            this.root = n;
+        }else{
+            insert(this.root, n);
+        }
+        this.size++;
+    }
+    private Node insert(Node current, Node inserting) {
+        if(current == null) {
+            current = inserting;
+        }
+        else if (inserting.getKey() < current.getKey()){
+            current.setLeft(insert(current.getLeft(), inserting));
+        }
+        else if (inserting.getKey() > current.getKey()){
+           current.setRight(insert(current.getRight(), inserting));
+        }
+        else {
+            current.setVal(inserting.getVal());
+        }
+        return current;
     }
 
     @Override
@@ -36,6 +70,6 @@ public class BinarySearchTreeDefault implements BinarySearchTree{
 
     @Override
     public int size() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.size;
     }
 }
