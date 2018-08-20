@@ -21,22 +21,35 @@ public class BinarySearchTreeDefault implements BinarySearchTree{
 
     public void order(){
         order(this.root);
+        System.out.print("\n");
     }
     private void order(Node n){
         if(n == null) return;
         else {
-            System.out.print(n.getKey() + " ");
             order(n.getLeft());
+            System.out.print(n.getKey() + " ");
             order(n.getRight());
         }
-        System.out.print("\n");
     }
     
     @Override
     public Node find(int key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return find(key, this.root);
     }
-
+    private Node find(int key, Node start) {
+        if(start == null) {
+            return null; // Explicit Comparison
+        }
+        if(start.getKey() == key){
+            return start;
+        }
+        if (key < start.getKey()){
+            return find(key, start.getLeft());
+        }
+        else {
+             return find(key, start.getRight());
+        }
+    }
     @Override
     public void insert(int key, Object val) {
         Node n = new Node(key, val);
@@ -65,9 +78,29 @@ public class BinarySearchTreeDefault implements BinarySearchTree{
 
     @Override
     public void remove(int key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Node delete = find(key);
+        if (delete == null) return;
+        remove(delete);
     }
-
+    private void remove(Node n){
+        if(n.getLeft() != null && n.getRight() != null){
+            Node next = findlastLeft(n.getRight());
+            n.setKey(next.getKey());
+            n.setVal(next.getVal());
+            remove(next);
+        }
+        /* Othres Three Hypotheses:
+            - HasLeft
+            - HasRight
+            - HasNothing
+        */   
+    }
+    private Node findlastLeft(Node n){
+        if(n.getLeft() != null){
+            return findlastLeft(n);
+        }
+        return n;
+    }
     @Override
     public int size() {
         return this.size;
