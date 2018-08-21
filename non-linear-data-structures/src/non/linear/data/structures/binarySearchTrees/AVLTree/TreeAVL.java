@@ -5,6 +5,8 @@
  */
 package non.linear.data.structures.binarySearchTrees.AVLTree;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import non.linear.data.structures.binarySearchTrees.BinarySearchTree;
 
 /**
@@ -82,26 +84,29 @@ private NodeAVL root;
         this.size++;
     }
     private NodeAVL insert(NodeAVL current, NodeAVL inserting) {
-        if(current == null) {
-            /*
-            Bug in return: this aways return the root
-            Possible solution: pass a reference for the parent, set this in constructor and return the newest node
-            
-            */
-            current = inserting;
-        }
-        else if (inserting.getKey() < current.getKey()){
-            current.setLeft(insert(current.getLeft(), inserting));
-            current.getLeft().setParent(current);
-        }
-        else if (inserting.getKey() > current.getKey()){
-           current.setRight(insert(current.getRight(), inserting));
-           current.getRight().setParent(current);
+        if (inserting.getKey() < current.getKey()){
+            if(current.getLeft() != null){
+                return insert(current.getLeft(), inserting);
+            }
+            else {   
+                current.setLeft(inserting);
+                inserting.setParent(current);
+                return inserting;
+            }
+        } else if (inserting.getKey() > current.getKey()){
+            if(current.getRight() != null){
+                return insert(current.getRight(), inserting);
+            }
+            else {   
+                current.setRight(inserting);
+                inserting.setParent(current);
+                return inserting;
+            }
         }
         else {
             current.setVal(inserting.getVal());
+            return current;
         }
-        return current;
     }
     
     public void remove(int key) {
@@ -153,17 +158,61 @@ private NodeAVL root;
     }
     
     private void rebalanceLeft(NodeAVL n){
-        /*
-            - Left Height > Right Height
-            - Check if dooble rotate is needed
-        */
-        System.out.println("Left ajust needed");
+        if(n.getLeft().getFb() >= 0){
+            rightRotate(n);
+            return;
+        }else {
+            doubleRightRotate(n);
+            return;
+        }
     }
     private void rebalanceRight(NodeAVL n){
-        /*
-            - Left Height < Right Height 
-            - Check if dooble rotate is needed
-        */
-        System.out.println("Right ajust needed");
+        if(n.getRight().getFb() <= 0){
+            leftRotate(n);
+            return;
+        }else {
+            doubleLeftRotate(n);
+            return;
+        }
+    }
+    private void doubleLeftRotate(NodeAVL n){
+        System.out.println("non.linear.data.structures.binarySearchTrees.AVLTree.TreeAVL.doubleLeftRotate()");
+        return;
+    }
+    private void doubleRightRotate(NodeAVL n){
+        System.out.println("non.linear.data.structures.binarySearchTrees.AVLTree.TreeAVL.doubleRightRotate()");
+        return;
+    }
+    private void leftRotate(NodeAVL n){//x
+        NodeAVL nRight = n.getRight();
+        NodeAVL rightLeft =  nRight.getLeft();
+        //Review references
+        if(n == this.root) this.root = nRight;
+        nRight.setLeft(n); 
+        n.setParent(nRight);
+        
+        n.setRight(rightLeft);
+        if(rightLeft!= null) rightLeft.setParent(n);
+        
+        n.setFb(n.getFb()+1 - min(nRight.getFb(), 0));
+        nRight.setFb(nRight.getFb()+1 - max(n.getFb(), 0));
+        
+        return;
+    }
+    private void rightRotate(NodeAVL n){
+        NodeAVL nLeft = n.getLeft();
+        NodeAVL leftRight = nLeft.getRight();
+        //Review references
+        if(n == this.root) this.root = nLeft;
+        nLeft.setRight(n);
+        n.setParent(nLeft);
+        
+        n.setLeft(leftRight);
+         if(leftRight!= null) leftRight.setParent(n);
+        
+        n.setFb(n.getFb()-1 - max(nLeft.getFb(), 0));
+        nLeft.setFb(nLeft.getFb()-1 - min(n.getFb(), 0));
+        
+        return;
     }
 }
