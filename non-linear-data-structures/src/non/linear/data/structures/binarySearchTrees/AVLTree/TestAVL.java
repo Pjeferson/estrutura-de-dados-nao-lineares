@@ -21,10 +21,10 @@ public class TestAVL {
         avl.insert(40, 40);
         avl.insert(41, 41);
         avl.order();
-        avl.remove(30);
+        /*avl.remove(30);
         avl.remove(40);
         avl.remove(31);
-        avl.order();
+        avl.order();*/
 
         System.out.println(avl.size());
         System.out.println(avl.find(40) != null);
