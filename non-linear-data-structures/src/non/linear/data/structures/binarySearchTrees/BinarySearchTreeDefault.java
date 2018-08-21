@@ -66,9 +66,11 @@ public class BinarySearchTreeDefault implements BinarySearchTree{
         }
         else if (inserting.getKey() < current.getKey()){
             current.setLeft(insert(current.getLeft(), inserting));
+            current.getLeft().setParent(current);
         }
         else if (inserting.getKey() > current.getKey()){
            current.setRight(insert(current.getRight(), inserting));
+           current.getRight().setParent(current);
         }
         else {
             current.setVal(inserting.getVal());
@@ -80,24 +82,43 @@ public class BinarySearchTreeDefault implements BinarySearchTree{
     public void remove(int key) {
         Node delete = find(key);
         if (delete == null) return;
-        remove(delete);
+        Node removed = remove(delete);
+        if(delete.getParent() == null)
+            this.root = removed;
+        this.size--;
     }
-    private void remove(Node n){
+    private Node remove(Node n){
         if(n.getLeft() != null && n.getRight() != null){
             Node next = findlastLeft(n.getRight());
             n.setKey(next.getKey());
             n.setVal(next.getVal());
             remove(next);
-        }
-        /* Othres Three Hypotheses:
-            - HasLeft
-            - HasRight
-            - HasNothing
-        */   
+            return n;
+        } else if(n.getLeft() != null){
+            n.getLeft().setParent(n.getParent());
+            if(n.getParent() != null){
+                if(n.getParent().getLeft()!=null && n.getParent().getLeft().getKey() == n.getKey()) n.getParent().setLeft(n.getLeft());
+                else n.getParent().setRight(n.getLeft());
+            }
+            return n.getLeft();
+        } else if(n.getRight() != null){
+            n.getRight().setParent(n.getParent());
+            if(n.getParent() != null){
+                if(n.getParent().getLeft()!=null && n.getParent().getLeft().getKey() == n.getKey()) n.getParent().setLeft(n.getRight());
+                else n.getParent().setRight(n.getRight());
+            }
+            return n.getRight();
+        } else {
+            if(n.getParent() != null){
+                if(n.getParent().getLeft()!=null && n.getParent().getLeft().getKey() == n.getKey()) n.getParent().setLeft(null);
+                else n.getParent().setRight(null);
+            }
+            return null;
+        } 
     }
     private Node findlastLeft(Node n){
         if(n.getLeft() != null){
-            return findlastLeft(n);
+            return findlastLeft(n.getLeft());
         }
         return n;
     }
