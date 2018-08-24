@@ -7,7 +7,6 @@ package non.linear.data.structures.binarySearchTrees.AVLTree;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import non.linear.data.structures.binarySearchTrees.BinarySearchTree;
 
 /**
  *
@@ -22,7 +21,11 @@ private NodeAVL root;
         this.root = null;
         this.size = 0;
     }
-
+    public void print(){
+        StringBuffer out = new StringBuffer();
+        this.root.printTree(out);
+        System.out.println(out);
+    }
     public void order(){
         order(this.root);
         System.out.print("\n");
@@ -54,33 +57,30 @@ private NodeAVL root;
         }
     }
     
-    private void updateFbInsert(NodeAVL n, NodeAVL parent){
-        if(parent == null) return;
-        if(parent.getLeft() != null && parent.getLeft().getKey() == n.getKey()){
-            parent.incFb();
-        }else {
-            parent.decFb();
-        }
-        if(parent.getFb() == 0) return;
-        if(parent.getFb() > 1){
-            rebalanceLeft(parent);
-            return;
-        } else if (parent.getFb() < -1){
-            rebalanceRight(parent);
-            return;
-        }
-        updateFbInsert(parent, parent.getParent());
+    private void updateFbInsert(NodeAVL inserted){
+        if(!inserted.hasParent()) return;
+        if(inserted.getParent().isLeft(inserted))
+            inserted.getParent().incFb();
+        else
+            inserted.getParent().decFb();
+        if(inserted.getParent().getFb() > 1)
+            rebalanceLeft( inserted.getParent());
+        else if ( inserted.getParent().getFb() < -1)
+            rebalanceRight( inserted.getParent());
+        if(inserted.getParent().getFb() != 0)
+            updateFbInsert(inserted.getParent());
             
     }
     
     public void insert(int key, Object val) {
         NodeAVL n = new NodeAVL(key, val);
-        if(this.root == null) {
+        if(this.root == null) { // First Node
             this.root = n;
+            this.size = 1;
             return;
         }
         NodeAVL inserted = insert(this.root, n);
-        updateFbInsert(inserted, inserted.getParent());
+        updateFbInsert(inserted);
         this.size++;
     }
     private NodeAVL insert(NodeAVL current, NodeAVL inserting) {
@@ -93,7 +93,7 @@ private NodeAVL root;
                 inserting.setParent(current);
                 return inserting;
             }
-        } else if (inserting.getKey() > current.getKey()){
+        } else {
             if(current.getRight() != null){
                 return insert(current.getRight(), inserting);
             }
@@ -103,18 +103,31 @@ private NodeAVL root;
                 return inserting;
             }
         }
-        else {
-            current.setVal(inserting.getVal());
-            return current;
-        }
+    }
+    
+    private void updateFbRemove(NodeAVL replaced){
+        if(!replaced.hasParent()) return;
+        if(replaced.getParent().isLeft(replaced))
+            replaced.getParent().decFb();
+        else
+            replaced.getParent().incFb();
+        
+        if(replaced.getParent().getFb() > 1)
+            rebalanceLeft(replaced.getParent());
+        else if (replaced.getParent().getFb() < -1)
+            rebalanceRight(replaced.getParent());
+        if(replaced.getParent().getFb() == 0)
+            updateFbRemove(replaced.getParent());
+            
     }
     
     public void remove(int key) {
         NodeAVL delete = find(key);
         if (delete == null) return;
-        NodeAVL removed = remove(delete);
-        if(delete.getParent() == null)
-            this.root = removed;
+        NodeAVL replaced = remove(delete);
+        if(replaced != null){
+            updateFbRemove(replaced);
+        }
         this.size--;
     }
     private NodeAVL remove(NodeAVL n){
@@ -122,30 +135,53 @@ private NodeAVL root;
             NodeAVL next = findlastLeft(n.getRight());
             n.setKey(next.getKey());
             n.setVal(next.getVal());
-            remove(next);
-            return n;
+            return remove(next);
         } else if(n.getLeft() != null){
             n.getLeft().setParent(n.getParent());
-            if(n.getParent() != null){
-                if(n.getParent().getLeft()!=null && n.getParent().getLeft().getKey() == n.getKey()) n.getParent().setLeft(n.getLeft());
-                else n.getParent().setRight(n.getLeft());
+            if(n.hasParent()){
+                if(n.getParent().isLeft(n)) 
+                    n.getParent().setLeft(n.getLeft());
+                else
+                    n.getParent().setRight(n.getLeft());
+            }else {
+                this.root = n.getLeft();
             }
             return n.getLeft();
         } else if(n.getRight() != null){
             n.getRight().setParent(n.getParent());
             if(n.getParent() != null){
-                if(n.getParent().getLeft()!=null && n.getParent().getLeft().getKey() == n.getKey()) n.getParent().setLeft(n.getRight());
-                else n.getParent().setRight(n.getRight());
+                if(n.getParent().isLeft(n))
+                    n.getParent().setLeft(n.getRight());
+                else
+                    n.getParent().setRight(n.getRight());
+            }else {
+                this.root = n.getRight();
             }
             return n.getRight();
         } else {
             if(n.getParent() != null){
-                if(n.getParent().getLeft()!=null && n.getParent().getLeft().getKey() == n.getKey()) n.getParent().setLeft(null);
-                else n.getParent().setRight(null);
+                if(n.getParent().isLeft(n)){
+                    n.getParent().setLeft(null);
+                    n.getParent().decFb();
+                }
+                else{
+                    n.getParent().setRight(null);
+                    n.getParent().incFb();
+                }
+                NodeAVL aux = n.getParent();
+                if(n.getParent().getFb() > 1)
+                    aux = rebalanceLeft(n.getParent());
+                else if(n.getParent().getFb() < -1)
+                    aux = rebalanceRight(n.getParent());
+                if(n.getParent().getFb() == 0)
+                    return aux;
+                return null;
             }
+            this.root = null;
             return null;
         } 
     }
+    
     private NodeAVL findlastLeft(NodeAVL n){
         if(n.getLeft() != null){
             return findlastLeft(n.getLeft());
@@ -157,62 +193,85 @@ private NodeAVL root;
         return this.size;
     }
     
-    private void rebalanceLeft(NodeAVL n){
-        if(n.getLeft().getFb() >= 0){
-            rightRotate(n);
-            return;
-        }else {
-            doubleRightRotate(n);
-            return;
-        }
+    private NodeAVL rebalanceLeft(NodeAVL n){
+        if(n.getLeft().getFb() >= 0)
+            return rightRotate(n);
+        else 
+            return doubleRightRotate(n);
     }
-    private void rebalanceRight(NodeAVL n){
-        if(n.getRight().getFb() <= 0){
-            leftRotate(n);
-            return;
-        }else {
-            doubleLeftRotate(n);
-            return;
-        }
+    
+    private NodeAVL rebalanceRight(NodeAVL n){
+        if(n.getRight().getFb() <= 0)
+            return leftRotate(n);
+        else
+            return doubleLeftRotate(n);
     }
-    private void doubleLeftRotate(NodeAVL n){
-        System.out.println("non.linear.data.structures.binarySearchTrees.AVLTree.TreeAVL.doubleLeftRotate()");
-        return;
+    
+    private NodeAVL doubleLeftRotate(NodeAVL n){
+        rightRotate(n.getRight());
+        return leftRotate(n);
     }
-    private void doubleRightRotate(NodeAVL n){
-        System.out.println("non.linear.data.structures.binarySearchTrees.AVLTree.TreeAVL.doubleRightRotate()");
-        return;
+    
+    private NodeAVL doubleRightRotate(NodeAVL n){
+        leftRotate(n.getLeft());
+        return rightRotate(n);
     }
-    private void leftRotate(NodeAVL n){//x
+    private NodeAVL leftRotate(NodeAVL n){//x
         NodeAVL nRight = n.getRight();
         NodeAVL rightLeft =  nRight.getLeft();
-        //Review references
-        if(n == this.root) this.root = nRight;
+
+        if(n == this.root){
+            nRight.setParent(null);
+            this.root = nRight;
+        }
+        else{
+            if(n.getParent().isLeft(n)){
+                n.getParent().setLeft(nRight);
+                nRight.setParent(n.getParent());
+            }
+            else{
+                n.getParent().setRight(nRight);
+                nRight.setParent(n.getParent());
+            }
+        }
+            
         nRight.setLeft(n); 
         n.setParent(nRight);
         
         n.setRight(rightLeft);
-        if(rightLeft!= null) rightLeft.setParent(n);
+        if(rightLeft != null) rightLeft.setParent(n);
         
         n.setFb(n.getFb()+1 - min(nRight.getFb(), 0));
-        nRight.setFb(nRight.getFb()+1 - max(n.getFb(), 0));
-        
-        return;
+        nRight.setFb(nRight.getFb()+1 + max(n.getFb(), 0));
+        return nRight;
     }
-    private void rightRotate(NodeAVL n){
+    
+    private NodeAVL rightRotate(NodeAVL n){
         NodeAVL nLeft = n.getLeft();
         NodeAVL leftRight = nLeft.getRight();
-        //Review references
-        if(n == this.root) this.root = nLeft;
+
+        if(n == this.root) {
+            nLeft.setParent(null);
+            this.root = nLeft;
+        }
+        else{
+            if(n.getParent().isLeft(n)){
+                n.getParent().setLeft(nLeft);
+                nLeft.setParent(n.getParent());
+            }
+            else{
+                n.getParent().setRight(nLeft);
+                nLeft.setParent(n.getParent());
+            }
+        }
         nLeft.setRight(n);
         n.setParent(nLeft);
         
         n.setLeft(leftRight);
-         if(leftRight!= null) leftRight.setParent(n);
+        if(leftRight != null) leftRight.setParent(n);
         
         n.setFb(n.getFb()-1 - max(nLeft.getFb(), 0));
-        nLeft.setFb(nLeft.getFb()-1 - min(n.getFb(), 0));
-        
-        return;
+        nLeft.setFb(nLeft.getFb()-1 + min(n.getFb(), 0));
+        return nLeft;
     }
 }
