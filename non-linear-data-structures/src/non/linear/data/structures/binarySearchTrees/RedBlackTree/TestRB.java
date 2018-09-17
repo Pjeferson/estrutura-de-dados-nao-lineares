@@ -10,5 +10,13 @@ package non.linear.data.structures.binarySearchTrees.RedBlackTree;
  * @author pjeferson
  */
 public class TestRB {
-    
+    public static void main(String[] args) {
+       TreeRB rb = new TreeRB();
+       rb.insert(4);
+       rb.insert(26);
+       rb.insert(3);
+       rb.insert(9);
+       rb.insert(15);
+       rb.order();
+    }
 }
