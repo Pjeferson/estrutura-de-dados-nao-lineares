@@ -17,6 +17,8 @@ public class TestRB {
        rb.insert(3);
        rb.insert(9);
        rb.insert(15);
+       
+       rb.print();
        rb.order();
     }
 }
