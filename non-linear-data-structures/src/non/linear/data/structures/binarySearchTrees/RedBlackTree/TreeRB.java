@@ -42,7 +42,6 @@ public class TreeRB {
                 }
             }
             else{
-                
                 NodeRB aux = n.getParent().getParent().getLeft();
                 if(!aux.isBlack()){
                     n.getParent().setBlack();
@@ -70,7 +69,7 @@ public class TreeRB {
         NodeRB rightLeft =  nRight.getLeft();
 
         if(n == this.root){
-            nRight.setParent(null);
+            nRight.setParent(this.nil);
             this.root = nRight;
         }
         else{
@@ -88,7 +87,7 @@ public class TreeRB {
         n.setParent(nRight);
         
         n.setRight(rightLeft);
-        if(rightLeft != null) rightLeft.setParent(n);
+        if(rightLeft != this.nil) rightLeft.setParent(n);
         
         return nRight;
     }
@@ -98,7 +97,7 @@ public class TreeRB {
         NodeRB leftRight = nLeft.getRight();
 
         if(n == this.root) {
-            nLeft.setParent(null);
+            nLeft.setParent(this.nil);
             this.root = nLeft;
         }
         else{
@@ -115,7 +114,7 @@ public class TreeRB {
         n.setParent(nLeft);
         
         n.setLeft(leftRight);
-        if(leftRight != null) leftRight.setParent(n);
+        if(leftRight != this.nil) leftRight.setParent(n);
         
         return nLeft;
     }
@@ -156,7 +155,139 @@ public class TreeRB {
             }
         }
     }
+    public void updateRemove(NodeRB n) {
+        
+        if(n!= this.root && n.isBlack()){
+            if(n.getParent().isLeft(n)){
+                NodeRB aux = n.getParent().getRight();
+                if(!aux.isBlack()){
+                    aux.setBlack();
+                    n.getParent().setRed();
+                    leftRotate(n.getParent());
+                    aux = n.getParent().getRight();
+                }
+                if(aux.getLeft().isBlack() && aux.getRight().isBlack()){
+                     aux.setRed();
+                     n = n.getParent();
+                }else if(aux.getRight().isBlack()){
+                    aux.getLeft().setBlack();
+                    aux.setRed();
+                    rightRotate(aux);
+                    aux = n.getParent().getRight();
+                } else {
+                    if(n.getParent().isBlack()) aux.setBlack();
+                    else aux.setRed();
+                    n.getParent().setBlack();
+                    aux.getRight().setBlack();
+                    leftRotate(n.getParent());
+                    n = this.root;
+                }
+            }
+            else{
+                NodeRB aux = n.getParent().getLeft();
+                if(!aux.isBlack()){
+                    aux.setBlack();
+                    n.getParent().setRed();
+                    rightRotate(n.getParent());
+                    aux = n.getParent().getLeft();
+                }
+                if(aux.getRight().isBlack() && aux.getLeft().isBlack()){
+                     aux.setRed();
+                     n = n.getParent();
+                }else if(aux.getLeft().isBlack()){
+                    aux.getRight().setBlack();
+                    aux.setRed();
+                    leftRotate(aux);
+                    aux = n.getParent().getLeft();
+                } else {
+                    if(n.getParent().isBlack()) aux.setBlack();
+                    else aux.setRed();
+                    n.getParent().setBlack();
+                    aux.getLeft().setBlack();
+                    rightRotate(n.getParent());
+                    n = this.root;
+                }
+            }
+            updateRemove(n);
+        }
+        else {
+           n.setBlack();
+        }
+    }
+    public void remove(int key) {
+        NodeRB delete = find(key);
+        if (delete == null) return;
+        remove(delete);
+        this.size--;
+    }
+    private void remove(NodeRB n){
+        boolean isBlack = n.isBlack();
+        NodeRB newN;
+        if(n.getRight() == this.nil){
+            n.getLeft().setParent(n.getParent());
+            if(n.getParent() != this.nil){
+                if(n.getParent().isLeft(n)) 
+                    n.getParent().setLeft(n.getLeft());
+                else
+                    n.getParent().setRight(n.getLeft());
+            }else {
+                this.root = n.getLeft()!=this.nil?n.getLeft():null;
+            }
+            newN = n.getLeft();
+        } else if(n.getLeft() == this.nil){
+            n.getRight().setParent(n.getParent());
+            if(n.getParent() != this.nil){
+                if(n.getParent().isLeft(n))
+                    n.getParent().setLeft(n.getRight());
+                else
+                    n.getParent().setRight(n.getRight());
+            }else {
+                this.root = n.getRight()!=this.nil?n.getRight():null;
+            }
+            newN = n.getRight();
+        } else {
+            newN = findlastLeft(n.getRight());
+            isBlack = newN.isBlack();
+            n.setKey(newN.getKey());
+            if(newN.getParent() == n){
+                n.setRight(newN.getRight());
+                newN.getRight().setParent(n);
+            }
+            else{
+                newN.getParent().setLeft(newN.getRight());
+                newN.getRight().setParent(newN.getParent());
+            }
+            newN = newN.getRight();
+        }
+        if(isBlack){
+            updateRemove(newN);
+        }
+    }
     
+    public NodeRB find(int key) {
+        return find(key, this.root);
+    }
+    private NodeRB find(int key, NodeRB start) {
+        if(start == this.nil) {
+            return null;
+        }
+        if(start.getKey() == key){
+            return start;
+        }
+        if (key < start.getKey()){
+            return find(key, start.getLeft());
+        }
+        else {
+             return find(key, start.getRight());
+        }
+    }
+    
+    private NodeRB findlastLeft(NodeRB n){
+        if(n.getLeft() != this.nil){
+            return findlastLeft(n.getLeft());
+        }
+        return n;
+    }
     public void order(){
         order(this.root);
         System.out.print("\n");
